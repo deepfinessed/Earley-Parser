@@ -191,7 +191,7 @@ class EBNF_Visitor:
         expect(right_paren ,")")
 
         # Add the rules to handle the new group token
-        group_string = self.terminal_string(node)
+        group_string = self.terminal_string(node).replace('"','')
         group_lhs = Token(group_string)
         group_rules = [Rule(group_lhs, rhs) for rhs in new_rhs]
         self.grammar[group_lhs] = group_rules
