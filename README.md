@@ -6,8 +6,11 @@ This is an Earley Parser, or chart parser, made to illustrate the algorithm disc
 
 ## Usage
 
-For now, you can test the parser with ```python simple-sentence.py``` which will print a parse chart to the console.
+Try the parser with ```python Parser.py FILE```
 
-The same file also includes a sample of how to write grammar rules that the parser understands.
+to see it parse `FILE` with a default simplified set of English grammar rules.
 
-In the future, I will try to include functionality to create a parse tree from a completed parse - ideally I'd like to have the parser "teach itself" how to parse EBNF grammar, and allow the parser to accept grammar files, but we're a ways away from that.
+The parser also supports specifying a grammar via EBNF.
+
+You can see this functionality with ```python Parser.py -g grammar.ebnf rogue_robot.txt```
+
