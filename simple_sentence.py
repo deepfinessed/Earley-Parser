@@ -27,6 +27,9 @@ if __name__ == '__main__':
 
     test.parse()
 
+    test_tree = test.parse_tree()
+
     print(test)
+
 
 

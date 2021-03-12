@@ -25,15 +25,21 @@ class Token:
         return self.token_type == '_TERMINAL'
 
     def __str__(self):
-        if self.token_type == '_TERMINAL':
+        if self.value:
             return f'"{self.value}"'
         return self.token_type
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.token_type == other.token_type and self.value == other.value
+        if not isinstance(other, self.__class__):
+            return False
+        if self.token_type == '_TERMINAL':
+            return other.token_type == self.token_type and self.value == other.value
+        return other.token_type == self.token_type
 
     def __hash__(self):
-        return hash((self.token_type, self.value))
+        if self.token_type == '_TERMINAL':
+            return hash(self.value)
+        return hash(self.token_type)
 
 
 
@@ -78,7 +84,7 @@ class Rule:
     def get_previous_token(self) -> Optional[Token]:
         if self.current_index < 1:
             return None
-        return self.rhs[self.current_index - 1]
+        return self.rhs[self.dot_index - 1]
 
     def is_completed(self) -> bool:
         return self.dot_index == len(self.rhs)
