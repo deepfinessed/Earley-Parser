@@ -25,8 +25,10 @@ class Token:
         return self.token_type == '_TERMINAL'
 
     def __str__(self):
-        if self.value:
+        if self.token_type == "_TERMINAL":
             return f'"{self.value}"'
+        if self.value:
+            return self.value
         return self.token_type
 
     def __eq__(self, other):
