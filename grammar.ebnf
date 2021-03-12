@@ -1,0 +1,6 @@
+S = NP, VP;
+NP = N | AttrNP;
+VP = VP, NP | V;
+AttrNp = NP, N;
+N = "DB" | "shows" | "spread";
+V = "shows" | "spread";
