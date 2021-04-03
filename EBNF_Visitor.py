@@ -83,20 +83,15 @@ class EBNF_Visitor:
         Returns the right hand side of a rule
         Note that that consists of all possible combinations of tokens, hence list of lists
 
-        Token("rhs")       : [Rule(Token("rhs"), [Token("identifier")]),
-                      Rule(Token("rhs"), [Token("terminal")]),
-                      Rule(Token("rhs"), [Token("optional")]),
-                      Rule(Token("rhs"), [Token("repitition")]),
-                      Rule(Token("rhs"), [Token("group")]),
-                      Rule(Token("rhs"), [Token("or")]),
-                      Rule(Token("rhs"), [Token("concat")])
-                    ],
+        rhs = term
+     | or;
         """
         if node.value.token_type != 'rhs':
             raise ValueError(f"visit_rhs on non-rhs {node.value.token_type}")
         children = node.children
         if len(children) != 1:
             raise ValueError(f"rhs with wrong number of children {children}")
+
         right_sides: Dict[str, Callable[[Node[Token]], List[List[Token]]]] = {
             "identifier" : self.visit_identifier,
             "terminal"   : self.visit_terminal,
@@ -110,11 +105,41 @@ class EBNF_Visitor:
         token_type = rhs_node.value.token_type
         if not token_type:
             raise ValueError(f"Invalid token without type {rhs_node.value}")
+        if token_type == 'or':
+            return self.visit_or(rhs_node)
+        return self.visit_sequence(rhs_node)
+
+    def visit_sequence(self, node: Node[Token]) -> List[List[Token]]:
+        if node.value.token_type != 'sequence':
+            raise ValueError(f"visit_term on non-term {node.value}")
+        children = node.children
+        if len(children) != 1:
+            raise ValueError(f"visit_sequence with wrong number of children {children}")
+        sequence, = node.children
+        if sequence.value.token_type == 'term':
+            return self.visit_term(sequence)
+        return self.visit_concat(sequence)
+
+    def visit_term(self, node: Node[Token]) -> List[List[Token]]:
+        if node.value.token_type != 'term':
+            raise ValueError(f"visit_term on non-term {node.value}")
+        # term = optional | repitition | concat | terminal | identifier | group;
+        term_types: Dict[str, Callable[[Node[Token]], List[List[Token]]]] = {
+            "identifier": self.visit_identifier,
+            "terminal": self.visit_terminal,
+            "optional": self.visit_optional,
+            "repitition": self.visit_repitition,
+            "group": self.visit_group,
+        }
+        term, = node.children
+        term_type = term.value.token_type
+        if not term_type:
+            raise ValueError(f"Invalid token without type {term}")
         try:
-            func = right_sides[token_type]
-            return func(rhs_node)
+            func = term_types[term_type]
+            return func(term)
         except KeyError as e:
-            print(f"Invalid type {token_type} for visit_rhs")
+            print(f"Invalid type {term_type} for visit_term")
             raise e
 
     def visit_optional(self, node: Node[Token]) -> List[List[Token]]:
@@ -199,14 +224,15 @@ class EBNF_Visitor:
         # And return the new token corresponding to the group
         return [[group_lhs]]
 
-    def visit_or(self, node: Node[Token]):
+    def visit_or(self, node: Node[Token]) -> List[List[Token]]:
+        # or = term , "|" , rhs;
         if node.value.token_type != 'or':
             raise ValueError(f"visit_or on non-or {node.value}")
         children = node.children
         if len(children) != 3:
             raise ValueError(f"Incorrect number of children for or {children}")
         left_nodes, bar, right_nodes = children
-        left = self.visit_rhs(left_nodes)
+        left = self.visit_sequence(left_nodes)
         expect(bar, "|")
         right = self.visit_rhs(right_nodes)
         left.extend(right)
@@ -219,9 +245,9 @@ class EBNF_Visitor:
         if len(children) != 3:
             raise ValueError(f"Incorrect number of children for concat {children}")
         prefix_nodes, comma, suffix_nodes = children
-        prefixes = self.visit_rhs(prefix_nodes)
+        prefixes = self.visit_term(prefix_nodes)
         expect(comma, ",")
-        suffixes = self.visit_rhs(suffix_nodes)
+        suffixes = self.visit_sequence(suffix_nodes)
         concatinated_rhs = [prefix + suffix for prefix in prefixes for suffix in suffixes]
         return concatinated_rhs
 
