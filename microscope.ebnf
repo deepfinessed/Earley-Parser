@@ -1,0 +1,9 @@
+S = NP, VP;
+NP = N | Det, N | NP, PP | Name;
+VP = V | VP, PP | V, NP;
+PP = Prep, NP;
+Name = "Jen";
+N = "man" | "microscope";
+V = "saw";
+Prep = "with";
+Det = "a" | "the";
