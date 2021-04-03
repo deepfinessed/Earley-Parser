@@ -44,9 +44,6 @@ class Token:
         return hash(self.token_type)
 
 
-
-
-
 class Rule:
     """
     A rule for our Earley Parser
@@ -114,7 +111,6 @@ class Rule:
     def __hash__(self):
         # exclusion of previous rules for equality prevents duplicate rules and infinite loops
         return hash((self.lhs, self.rhs, self.start_index, self.current_index, self.dot_index))
-
 
 
 def _base_n(number: int, base: int) -> Generator[int, None, None]:

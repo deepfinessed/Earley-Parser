@@ -50,7 +50,8 @@ class Parser:
 
     def insert(self, rule: Rule) -> None:
         rule.index = (rule.current_index, len(self.chart[rule.current_index]))
-        if rule not in self.chart[rule.current_index]:
+        # Avoid repeatedly inserting rules that are 'from xxx'
+        if rule.updated_rule or rule not in self.chart[rule.current_index]:
             self.chart[rule.current_index].append(rule)
 
     def predict(self, rule: Rule) -> None:
@@ -148,6 +149,13 @@ class Parser:
             return self.__make_node(completed_parse)
         except StopIteration:
             return None
+
+    def parse_forest(self) -> List[Node]:
+        if not any(self.chart):
+            self.parse()
+        completed = lambda rule: rule.lhs == self.start_symbol and rule.start_index == 0 \
+                                 and rule.current_index == len(self.input_tokens)
+        return [self.__make_node(rule) for rule in self.chart[-1] if completed(rule)]
 
     def __str__(self) -> str:
         def _token(index: int):
