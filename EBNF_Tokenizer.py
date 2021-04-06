@@ -12,7 +12,6 @@ class Char_Reader:
     text: str
     line_number: int
     char_index: int
-    line_number: int
     horiz_position: int
 
     def __init__(self, source):
