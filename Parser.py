@@ -103,7 +103,9 @@ class Parser:
                                  and rule.current_index == len(self.input_tokens)
         return any([completed(rule) for rule in self.chart[-1]])
 
-    def get_rule(self, index: Tuple[int, int]):
+    def get_rule(self, index: Optional[Tuple[int, int]]):
+        if index is None:
+            raise ValueError('None index passed to get_rule')
         row, idx = index
         try:
             return self.chart[row][idx]
@@ -139,7 +141,7 @@ class Parser:
 
         return new_parent_node
 
-    def parse_tree(self) -> Optional[Node]:
+    def parse_tree(self) -> Optional[Node[Token]]:
         if not any(self.chart):
             self.parse()
         try:
@@ -180,6 +182,8 @@ if __name__ =='__main__':
             grammar_parser = Parser(EBNF_Grammar.grammar, EBNF_Grammar.start_symbol)
             grammar_parser.parse(tokens)
             grammar_tree = grammar_parser.parse_tree()
+            if grammar_tree is None:
+                raise ValueError('There is no valid parse')
             grammar_visitor = EBNF_Visitor()
             new_grammar = grammar_visitor.generate_grammar(grammar_tree)
     else:

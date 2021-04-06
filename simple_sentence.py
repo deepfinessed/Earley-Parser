@@ -1,7 +1,8 @@
+from typing import Dict, List
 from Rule import Token, Rule
 from Parser import Parser
 
-grammar = {
+grammar: Dict[Token, List[Rule]] = {
     Token("S")      : [Rule(Token("S"), [Token("NP"), Token("VP")])],
     Token("NP")     : [Rule(Token("NP"), [Token("N")]), Rule(Token("NP"), [Token("AttrNP")])],
     Token("VP")     : [Rule(Token("VP"), [Token("V")]), Rule(Token("VP"), [Token("VP"), Token("NP")])],
