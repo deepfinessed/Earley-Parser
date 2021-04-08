@@ -103,7 +103,7 @@ class Parser:
                                  and rule.current_index == len(self.input_tokens)
         return any([completed(rule) for rule in self.chart[-1]])
 
-    def get_rule(self, index: Optional[Tuple[int, int]]):
+    def get_rule(self, index: Optional[Tuple[int, int]]) -> Rule:
         if index is None:
             raise ValueError('None index passed to get_rule')
         row, idx = index
@@ -114,7 +114,7 @@ class Parser:
             raise e
 
 
-    def __make_node(self, rule: Rule) -> Node:
+    def __make_node(self, rule: Rule) -> Node[Token]:
 
         # Handle all previous rules
         previous_siblings = []
@@ -152,7 +152,7 @@ class Parser:
         except StopIteration:
             return None
 
-    def parse_forest(self) -> List[Node]:
+    def parse_forest(self) -> List[Node[Token]]:
         if not any(self.chart):
             self.parse()
         completed = lambda rule: rule.lhs == self.start_symbol and rule.start_index == 0 \
