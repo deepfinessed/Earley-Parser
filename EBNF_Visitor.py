@@ -3,7 +3,7 @@ from typing import Callable, Dict, List
 from Tree import Node
 from Rule import Rule, Token
 
-def expect(node: Node, char: str):
+def expect(node: Node[Token], char: str) -> None:
     if not node.value.value == char:
         raise ValueError(f"Unexpected {node.value}, expected a {char}")
 
@@ -15,7 +15,7 @@ class EBNF_Visitor:
 
     grammar: Dict[Token, List[Rule]]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.grammar = {}
 
     def generate_grammar(self, node: Node[Token]) -> Dict[Token, List[Rule]]:
@@ -24,7 +24,7 @@ class EBNF_Visitor:
 
     # Each grammar node holds a rule and optionally another grammar node
     # This adds its rule to the grammar
-    def visit_grammar(self, node: Node[Token]):
+    def visit_grammar(self, node: Node[Token]) -> None:
         """
         Each grammar node holds a rule and optionally another grammar node
         This adds its rule to the grammar
@@ -190,7 +190,6 @@ class EBNF_Visitor:
         # rhs_rpt: B_RPT -> B, B_RPT
         rhs_rpt = [rhs + [repeat_token] for rhs in repeat_rhs]
         rhs_rpt.extend(repeat_rhs)
-        repeat_rule = Rule(repeat_token, [tuple(rhs) for rhs in rhs_rpt])
         # A -> C  (the expression in brackets is empty)
         # A -> B_RPT, C (where B_RPT represents B one or more times)
         return [[], [repeat_token]]
@@ -238,7 +237,7 @@ class EBNF_Visitor:
         left.extend(right)
         return left
 
-    def visit_concat(self, node: Node[Token]):
+    def visit_concat(self, node: Node[Token]) -> List[List[Token]]:
         if node.value.token_type != 'concat':
             raise ValueError(f"visit_concat on non-concat {node.value}")
         children = node.children
@@ -261,7 +260,7 @@ class EBNF_Visitor:
             raise ValueError(f"visit_terminal on non-terminal {node.value}")
         return [[Token("_TERMINAL", value=node.value.value)]]
 
-    def terminal_string(self, node: Node):
+    def terminal_string(self, node: Node[Token]) -> str:
         if node.children:
             child_strings = [self.terminal_string(child) for child in node.children]
             return ''.join(child_strings)

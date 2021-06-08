@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import List, Dict, Optional, Set, Tuple
+from typing import Callable, List, Dict, Optional, Set, Tuple
 
 import EBNF_Grammar
 from EBNF_Tokenizer import EBNF_Tokenizer
@@ -29,7 +29,8 @@ class Parser:
     current_position: int
 
 
-    def __init__(self, grammar, start_symbol, input_tokens=None):
+    def __init__(self, grammar: Dict[Token, List[Rule]], start_symbol: Token,
+                 input_tokens: Optional[List[Token]]=None) -> None:
         self.grammar = grammar
         self.terminals = {
             token : {literal.value for rule in self.grammar[token] for literal in rule.rhs if self.is_terminal(literal)}
@@ -71,7 +72,7 @@ class Parser:
                              waiting_rule.start_index, completed_rule.current_index, dot_index=waiting_rule.dot_index+1,
                              previous_rule=completed_rule.index, updated_rule=waiting_rule.index))
 
-    def scan_input(self, rule) -> None:
+    def scan_input(self, rule: Rule) -> None:
         try:
             next_token = self.input_tokens[rule.current_index]
         except IndexError:
@@ -80,7 +81,7 @@ class Parser:
                 or (rule.get_current_token() in self.terminals and next_token.value in self.terminals[rule.get_current_token()]):
             self.insert(Rule(rule.get_current_token(), [next_token], rule.current_index, rule.current_index+1, dot_index=1))
 
-    def parse(self, input_tokens=None):
+    def parse(self, input_tokens: Optional[List[Token]]=None) -> None:
         if input_tokens:
             self.input_tokens = input_tokens
             self.chart = [[] for _ in range(len(input_tokens) + 1)]
@@ -99,7 +100,7 @@ class Parser:
     def is_complete(self) -> bool:
         if not any(self.chart):
             self.parse()
-        completed = lambda rule: rule.lhs == self.start_symbol and rule.start_index == 0 \
+        completed: Callable[[Rule], bool] = lambda rule: rule.lhs == self.start_symbol and rule.start_index == 0 \
                                  and rule.current_index == len(self.input_tokens)
         return any([completed(rule) for rule in self.chart[-1]])
 
@@ -160,7 +161,7 @@ class Parser:
         return [self.__make_node(rule) for rule in self.chart[-1] if completed(rule)]
 
     def __str__(self) -> str:
-        def _token(index: int):
+        def _token(index: int) -> str:
             return 'ℇ' if index <= 0 else self.input_tokens[index - 1]
         rows = [[f'Row {index}: {_token(index)}'] + [str(rule) for rule in row] for index, row in enumerate(self.chart)]
         return '\n'.join(['\n'.join(row) for row in rows])

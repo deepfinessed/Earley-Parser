@@ -14,7 +14,7 @@ class Char_Reader:
     char_index: int
     horiz_position: int
 
-    def __init__(self, source):
+    def __init__(self, source: TextIO) -> None:
         self.text = source.read()
         self.char_index = 0
         self.line_number = 0
@@ -45,7 +45,7 @@ class EBNF_Tokenizer:
     reader: Char_Reader
     quotes: List[str]
 
-    def __init__(self, source):
+    def __init__(self, source: TextIO):
         self.reader = Char_Reader(source)
         symbols = ["[" , "]" , "{" , "}" , "(" , ")" , "<" , ">", "=" , "," , "." , "," , ";", "=", "|"]
         self.symbols = {symbol : Token("_TERMINAL", value=symbol) for symbol in symbols}

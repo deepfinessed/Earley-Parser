@@ -1,4 +1,4 @@
-from typing import Generator, Optional, Tuple
+from typing import Any, Generator, Iterable, Optional, Tuple
 
 
 class Token:
@@ -14,31 +14,31 @@ class Token:
     Tokens can either be pre-tagged with a type, which will then be used by Parser, or have type None, in which
     case the Parser will try to infer their type based on their value and its terminal ruleset.
     """
-    token_type: Optional[str]
+    token_type: str
     value: Optional[str]
 
-    def __init__(self, token_type, value=None):
+    def __init__(self, token_type: str, value: Optional[str]=None):
         self.token_type = token_type
         self.value = value
 
-    def is_terminal(self):
+    def is_terminal(self) -> bool:
         return self.token_type == '_TERMINAL'
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.token_type == "_TERMINAL":
             return f'"{self.value}"'
         if self.value:
             return self.value
         return self.token_type
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             return False
         if self.token_type == '_TERMINAL':
             return other.token_type == self.token_type and self.value == other.value
         return other.token_type == self.token_type
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if self.token_type == '_TERMINAL':
             return hash(self.value)
         return hash(self.token_type)
@@ -64,9 +64,11 @@ class Rule:
     updated_rule: Optional[Tuple[int, int]]
 
 
-    def __init__(self, lhs, rhs, start_index=0, current_index=0, dot_index=0, index=None, previous_rule=None, updated_rule=None):
+    def __init__(self, lhs: Token, rhs: Iterable[Token], start_index: int=0, current_index: int=0, dot_index: int=0,
+                 index: Optional[Tuple[int, int]]=None, previous_rule: Optional[Tuple[int, int]]=None,
+                 updated_rule: Optional[Tuple[int, int]]=None):
         self.lhs = lhs
-        self.rhs = rhs
+        self.rhs = tuple(rhs)
         self.start_index = start_index
         self.current_index = current_index
         self.dot_index = dot_index
@@ -88,7 +90,7 @@ class Rule:
     def is_completed(self) -> bool:
         return self.dot_index == len(self.rhs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         rhs_str = ' '.join(
             ['•' + str(item) if index == self.dot_index else str(item) for index, item in enumerate(self.rhs)]
         )
@@ -102,13 +104,13 @@ class Rule:
             suffix = f"from {outline_form(self.previous_rule)}"
         return f'{outline_form(self.index):3} {str(self.lhs):10} → {rhs_str:20} [{self.start_index:2}, {self.current_index:2}] {suffix}'
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         # exclusion of previous rules for equality prevents duplicate rules and infinite loops
         return isinstance(other, self.__class__) and self.lhs == other.lhs and self.rhs == other.rhs \
                and self.start_index == other.start_index and self.current_index == other.current_index \
                and self.dot_index == other.dot_index
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # exclusion of previous rules for equality prevents duplicate rules and infinite loops
         return hash((self.lhs, self.rhs, self.start_index, self.current_index, self.dot_index))
 
@@ -121,7 +123,9 @@ def _base_n(number: int, base: int) -> Generator[int, None, None]:
         yield from _base_n(number, base)
         yield remainder
 
-def outline_form(index: Tuple[int, int]) -> str:
+def outline_form(index: Optional[Tuple[int, int]]) -> str:
+    if index is None:
+        return ''
     row_number, column_number = index
     suffix = ''.join(chr(ord('a') + digit) for digit in _base_n(column_number, 26))
     return f'{row_number}.{suffix}'

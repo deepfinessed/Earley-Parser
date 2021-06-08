@@ -1,3 +1,5 @@
+from typing import List
+
 from Rule import Token
 
 class Simple_Tokenizer:
@@ -7,8 +9,8 @@ class Simple_Tokenizer:
 
     text: str
 
-    def __init__(self, text):
+    def __init__(self, text: str) -> None:
         self.text = text
 
-    def tokenize(self):
+    def tokenize(self) -> List[Token]:
         return [Token("_TERMINAL", value=token) for token in self.text.split()]

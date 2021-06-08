@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from Rule import Token, Rule
 
 """
@@ -8,7 +10,7 @@ To avoid exploding our poor parser and generating absolutely silly parse trees, 
 identifying terminal and identifier symbols to the parser.
 """
 
-grammar = {
+grammar: Dict[Token, List[Rule]] = {
     Token("grammar")   : [Rule(Token("grammar"), [Token("rule"), Token("grammar")]),
                         Rule(Token("grammar"), [Token("rule")])],
     Token("rule")      : [Rule(Token("rule"), [Token("lhs"), Token("_TERMINAL", "="), Token("rhs"), Token("_TERMINAL", ";")])],
